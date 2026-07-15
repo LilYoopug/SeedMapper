@@ -92,16 +92,16 @@ To build the mod locally, follow these steps:
    git clone --recurse-submodules https://github.com/xpple/SeedMapper
    cd SeedMapper
    ```
-2. Compile cubiomes to a shared library. MSVC cannot be used to build the project! The following is for Windows:
+2. Compile cubiomes to a shared library on Linux ARM64 (`aarch64`/`arm64`):
    ```shell
    cd src/main/c/cubiomes
    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
    cmake --build build --config Release
-   cp build/cubiomes.dll ../../resources/cubiomes.dll
+   cp build/libcubiomes.so ../../resources/libcubiomes-aarch64.so
    cd ../../../../
    ```
 3. Install LLVM (version 13.0.0 is recommended) and set the environment variable `LLVM_HOME` to the directory where LLVM was installed.
-4. Compile jextract. Again, the following is for Windows:
+4. Compile jextract:
    ```shell
    cd jextract
    ./gradlew --stacktrace -Pjdk_home="$env:JAVA_HOME" -Pllvm_home="$env:LLVM_HOME" clean verify
@@ -113,4 +113,4 @@ To build the mod locally, follow these steps:
    ```
    You should find the Java bindings in `src/main/java/com/github/cubiomes`.
 
-Lastly, you can also consult the [GitHub Actions workflow file](https://github.com/xpple/SeedMapper/blob/master/.github/workflows/build.yml), which contains complete build instructions for each major OS.
+Lastly, you can also consult the [GitHub Actions workflow file](https://github.com/xpple/SeedMapper/blob/master/.github/workflows/build.yml), which contains the ARM64 Linux build and release pipeline.

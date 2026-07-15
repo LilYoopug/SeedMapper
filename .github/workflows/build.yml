@@ -11,93 +11,28 @@ on:
 jobs:
   compile-cubiomes:
     name: Compile Cubiomes to shared library
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           submodules: 'true'
 
-      - name: Compile shared library (ubuntu-latest)
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: src/main/c/cubiomes
-        run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release
-          cp build/libcubiomes.so ../../resources/libcubiomes.so
-      - name: Compile shared library (ubuntu-24.04-arm)
-        if: matrix.os == 'ubuntu-24.04-arm'
+      - name: Compile ARM64 shared library
         working-directory: src/main/c/cubiomes
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
           cp build/libcubiomes.so ../../resources/libcubiomes-aarch64.so
-      - name: Compile shared library (macos-latest)
-        if: matrix.os == 'macos-latest'
-        working-directory: src/main/c/cubiomes
-        run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-          cmake --build build --config Release
-          cp build/libcubiomes.dylib ../../resources/libcubiomes.dylib
-      - name: Set up MSYS2 (windows-latest)
-        if: matrix.os == 'windows-latest'
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >
-            base-devel
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
-      - name: Compile shared library (windows-latest)
-        if: matrix.os == 'windows-latest'
-        working-directory: src/main/c/cubiomes
-        shell: msys2 {0}
-        run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release
-          cp build/cubiomes.dll ../../resources/cubiomes.dll
 
-      - name: Compute SHA256 hash (ubuntu-latest)
-        if: matrix.os == 'ubuntu-latest'
-        run: sha256sum src/main/resources/libcubiomes.so
-      - name: Compute SHA256 hash (ubuntu-24.04-arm)
-        if: matrix.os == 'ubuntu-24.04-arm'
+      - name: Compute SHA256 hash
         run: sha256sum src/main/resources/libcubiomes-aarch64.so
-      - name: Compute SHA256 hash (macos-latest)
-        if: matrix.os == 'macos-latest'
-        run: shasum -a 256 src/main/resources/libcubiomes.dylib
-      - name: Compute SHA256 hash (windows-latest)
-        if: matrix.os == 'windows-latest'
-        run: Get-FileHash -Algorithm SHA256 src/main/resources/cubiomes.dll
 
-      - name: Capture shared library (ubuntu-latest)
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v7
-        with:
-          name: libcubiomes.so
-          path: src/main/resources/libcubiomes.so
-      - name: Capture shared library (ubuntu-24.04-arm)
-        if: matrix.os == 'ubuntu-24.04-arm'
+      - name: Capture ARM64 shared library
         uses: actions/upload-artifact@v7
         with:
           name: libcubiomes-aarch64.so
           path: src/main/resources/libcubiomes-aarch64.so
-      - name: Capture shared library (macos-latest)
-        if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v7
-        with:
-          name: libcubiomes.dylib
-          path: src/main/resources/libcubiomes.dylib
-      - name: Capture shared library (windows-latest)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v7
-        with:
-          name: cubiomes.dll
-          path: src/main/resources/cubiomes.dll
 
   build:
     name: Build SeedMapper
@@ -113,7 +48,7 @@ jobs:
       - name: Capture shared library
         uses: actions/download-artifact@v8
         with:
-          merge-multiple: true
+          name: libcubiomes-aarch64.so
           path: src/main/resources/
       - name: Validate gradle wrapper
         uses: gradle/actions/wrapper-validation@v5
