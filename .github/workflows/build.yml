@@ -13,7 +13,7 @@ jobs:
     name: Compile Cubiomes to shared library
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -28,6 +28,13 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release
           cp build/libcubiomes.so ../../resources/libcubiomes.so
+      - name: Compile shared library (ubuntu-24.04-arm)
+        if: matrix.os == 'ubuntu-24.04-arm'
+        working-directory: src/main/c/cubiomes
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release
+          cp build/libcubiomes.so ../../resources/libcubiomes-aarch64.so
       - name: Compile shared library (macos-latest)
         if: matrix.os == 'macos-latest'
         working-directory: src/main/c/cubiomes
@@ -57,6 +64,9 @@ jobs:
       - name: Compute SHA256 hash (ubuntu-latest)
         if: matrix.os == 'ubuntu-latest'
         run: sha256sum src/main/resources/libcubiomes.so
+      - name: Compute SHA256 hash (ubuntu-24.04-arm)
+        if: matrix.os == 'ubuntu-24.04-arm'
+        run: sha256sum src/main/resources/libcubiomes-aarch64.so
       - name: Compute SHA256 hash (macos-latest)
         if: matrix.os == 'macos-latest'
         run: shasum -a 256 src/main/resources/libcubiomes.dylib
@@ -70,6 +80,12 @@ jobs:
         with:
           name: libcubiomes.so
           path: src/main/resources/libcubiomes.so
+      - name: Capture shared library (ubuntu-24.04-arm)
+        if: matrix.os == 'ubuntu-24.04-arm'
+        uses: actions/upload-artifact@v7
+        with:
+          name: libcubiomes-aarch64.so
+          path: src/main/resources/libcubiomes-aarch64.so
       - name: Capture shared library (macos-latest)
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v7

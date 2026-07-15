@@ -51,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.Locale;
 
 public class SeedMapper implements ClientModInitializer {
 
@@ -63,7 +64,7 @@ public class SeedMapper implements ClientModInitializer {
     public static final boolean BARITONE_AVAILABLE = FabricLoader.getInstance().getModContainer("baritone-meteor").isPresent();
 
     static {
-        String libraryName = System.mapLibraryName("cubiomes");
+        String libraryName = getLibraryName();
         ModContainer modContainer = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow();
         Path tempFile;
         try {
@@ -73,6 +74,15 @@ public class SeedMapper implements ClientModInitializer {
             throw new RuntimeException(e);
         }
         System.load(tempFile.toAbsolutePath().toString());
+    }
+
+    private static String getLibraryName() {
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        String osArch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
+        if (osName.contains("linux") && (osArch.equals("aarch64") || osArch.equals("arm64"))) {
+            return "libcubiomes-aarch64.so";
+        }
+        return System.mapLibraryName("cubiomes");
     }
 
     @Override
