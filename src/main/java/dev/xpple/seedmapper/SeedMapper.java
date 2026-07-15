@@ -79,7 +79,7 @@ public class SeedMapper implements ClientModInitializer {
     private static String getLibraryName() {
         String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
         String osArch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
-        if (osName.contains("linux") && (osArch.equals("aarch64") || osArch.equals("arm64"))) {
+        if (osName.contains("linux") && (osArch.startsWith("aarch64") || osArch.startsWith("arm64"))) {
             return "libcubiomes-aarch64.so";
         }
         return System.mapLibraryName("cubiomes");
